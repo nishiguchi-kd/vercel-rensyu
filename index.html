@@ -1,125 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>くそねむわろたんばりん</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(to bottom, #1a1a2e, #16213e);
-            overflow: hidden;
-            font-family: sans-serif;
-        }
-
-        .button {
-            padding: 15px 30px;
-            font-size: 20px;
-            background-color: #e94560;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            z-index: 1000;
-        }
-
-        .button:hover {
-            transform: scale(1.1);
-        }
-
-        .button:active {
-            transform: scale(0.9);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .sleep {
-            position: absolute;
-            color: #fff;
-            font-size: 24px;
-            user-select: none;
-            pointer-events: none;
-        }
-
-        #message {
-            position: fixed;
-            top: 20px;
-            color: white;
-            font-size: 24px;
-            text-align: center;
-            width: 100%;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        #message.show {
-            opacity: 1;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>インタラクティブボタン</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="message">くっっそねむい💤</div>
-    <button class="button">絶対押すな危険</button>
+    <div id="app"></div>
 
     <script>
-        const button = document.querySelector('.button');
-        const message = document.getElementById('message');
-        const sleepChars = ['💤', '😴', 'z', 'Z'];
-        let isSnowing = false;
+        const app = document.getElementById('app');
+        let buttons = [
+            { id: 1, color: 'red', x: 'calc(50% - 60px)', y: 'calc(50% - 40px)' },
+            { id: 2, color: 'blue', x: 'calc(50% + 60px)', y: 'calc(50% - 40px)' }
+        ];
 
-        button.addEventListener('click', () => {
-            if (!isSnowing) {
-                isSnowing = true;
-                showMessage();
-                startSnow();
+        function createButton(button) {
+            const buttonElement = document.createElement('button');
+            buttonElement.className = 'button';
+            buttonElement.style.left = button.x;
+            buttonElement.style.top = button.y;
+            
+            const img = document.createElement('img');
+            img.src = button.color === 'red' ? 'img/ufo_plus.svg' : 'img/ufo_minus.svg';
+            img.alt = button.color === 'red' ? '追加ボタン' : '削除ボタン';
+            
+            buttonElement.appendChild(img);
+            buttonElement.onclick = button.color === 'red' ? addButton : removeButton;
+            
+            return buttonElement;
+        }
+
+        function renderButtons() {
+            app.innerHTML = '';
+            buttons.forEach(button => {
+                app.appendChild(createButton(button));
+            });
+        }
+
+        function addButton() {
+            const newButton = {
+                id: Date.now(),
+                color: Math.random() < 0.5 ? 'red' : 'blue',
+                x: `${Math.random() * 80 + 10}%`,
+                y: `${Math.random() * 80 + 10}%`
+            };
+            buttons.push(newButton);
+            renderButtons();
+        }
+
+        function removeButton() {
+            if (buttons.length > 2) {
+                const index = Math.floor(Math.random() * (buttons.length - 2)) + 2;
+                buttons.splice(index, 1);
+                renderButtons();
             }
-        });
-
-        function showMessage() {
-            message.classList.add('show');
-            setTimeout(() => {
-                message.classList.remove('show');
-            }, 3000);  // 3秒後にフェードアウト
         }
 
-        function createSleep() {
-            const sleep = document.createElement('div');
-            sleep.className = 'sleep';
-            sleep.style.left = Math.random() * window.innerWidth + 'px';
-            sleep.style.top = -30 + 'px';
-            sleep.textContent = sleepChars[Math.floor(Math.random() * sleepChars.length)];
-            document.body.appendChild(sleep);
-
-            let position = -30;
-            let offset = Math.random() * 4 - 2;
-            let opacity = 1;
-
-            function fall() {
-                if (position > window.innerHeight) {
-                    sleep.remove();
-                    return;
-                }
-
-                position += 2;
-                offset += Math.random() * 0.4 - 0.2;
-                opacity -= 0.003;
-
-                sleep.style.top = position + 'px';
-                sleep.style.left = parseFloat(sleep.style.left) + offset + 'px';
-                sleep.style.opacity = opacity;
-
-                requestAnimationFrame(fall);
-            }
-
-            fall();
-        }
-
-        function startSnow() {
-            setInterval(createSleep, 200);
-        }
+        renderButtons();
+        
     </script>
 </body>
 </html>
